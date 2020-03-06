@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -10,60 +8,76 @@ namespace ConsoleApp1
 {
     class JsonFeed
     {
-        static string _url = "";
+        private readonly string endpointUrl = "";
 
         public JsonFeed() { }
-        public JsonFeed(string endpoint, int results)
+
+        public JsonFeed(string endpoint)
         {
-            _url = endpoint;
-        }
-        
-		public static string[] GetRandomJokes(string firstname, string lastname, string category)
-		{
-			HttpClient client = new HttpClient();
-			client.BaseAddress = new Uri(_url);
-			string url = "jokes/random";
-			if (category != null)
-			{
-				if (url.Contains('?'))
-					url += "&";
-				else url += "?";
-				url += "category=";
-				url += category;
-			}
-
-            string joke = Task.FromResult(client.GetStringAsync(url).Result).Result;
-
-            if (firstname != null && lastname != null)
-            {
-                int index = joke.IndexOf("Chuck Norris");
-                string firstPart = joke.Substring(0, index);
-                string secondPart = joke.Substring(0 + index + "Chuck Norris".Length, joke.Length - (index + "Chuck Norris".Length));
-                joke = firstPart + " " + firstname + " " + lastname + secondPart;
-            }
-
-            return new string[] { JsonConvert.DeserializeObject<dynamic>(joke).value };
+            endpointUrl = endpoint;
         }
 
         /// <summary>
-        /// returns an object that contains name and surname
+        /// Retrieves random chuck norris jokes based on category, replacing the name Chuck Norris with the provided firstName and lastName
         /// </summary>
-        /// <param name="client2"></param>
-        /// <returns></returns>
-		public static dynamic Getnames()
+        /// <returns>a string array of random chuck norris jokes</returns>
+        public string[] GetRandomJokes(string firstname, string lastname, string category, int numberOfJokes)
 		{
 			HttpClient client = new HttpClient();
-			client.BaseAddress = new Uri(_url);
-			var result = client.GetStringAsync("").Result;
-			return JsonConvert.DeserializeObject<dynamic>(result);
-		}
+			client.BaseAddress = new Uri(endpointUrl);
+			string requestUrl = "jokes/random";
+            if (category != null)
+            {
+                if (requestUrl.Contains('?'))
+                {
+                    requestUrl += "&";
+                }
+                else
+                {
+                    requestUrl += "?category=" + category;
+                }
+			}
 
-		public static string[] GetCategories()
+            List<String> jokes = new List<string>();
+            for (int i = 0; i < numberOfJokes; i++)
+            {
+                string joke = Task.FromResult(client.GetStringAsync(requestUrl).Result).Result;
+
+                if (firstname != null && lastname != null)
+                {
+                    joke = joke.Replace("Chuck Norris", firstname + " " + lastname);
+                    joke = joke.Replace("Chuck", firstname);
+                    joke = joke.Replace("Norris", lastname);                
+                }
+
+                jokes.Add(joke);
+            }
+
+            return jokes.ToArray();
+        }
+
+        /// <summary>
+        /// Retrieves a random name
+        /// </summary>
+        /// <returns>an object that contains name and surname</returns>
+		public dynamic Getname()
 		{
 			HttpClient client = new HttpClient();
-			client.BaseAddress = new Uri(_url);
+			client.BaseAddress = new Uri(endpointUrl);
+            var result = client.GetStringAsync("").Result;
+            return JsonConvert.DeserializeObject<dynamic>(result);
+        }
 
-			return new string[] { Task.FromResult(client.GetStringAsync("categories").Result).Result };
+        /// <summary>
+        /// Retrieves available joke categories
+        /// </summary>
+        /// <returns>a string array of categories</returns>
+		public string[] GetCategories()
+		{
+			HttpClient client = new HttpClient();
+			client.BaseAddress = new Uri(endpointUrl);
+
+			return new string[] { Task.FromResult(client.GetStringAsync("jokes/categories").Result).Result };
 		}
     }
 }

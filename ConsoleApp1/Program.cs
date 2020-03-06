@@ -10,120 +10,120 @@ namespace ConsoleApp1
 {
     class Program
     {
-        static string[] results = new string[50];
-        static char key;
-        static Tuple<string, string> names;
-        static ConsolePrinter printer = new ConsolePrinter();
+        const int MaxJokes = 9;
 
         static void Main(string[] args)
         {
-            printer.Value("Press ? to get instructions.").ToString();
-            if (Console.ReadLine() == "?")
+            Console.WriteLine("Press ? to get instructions.");
+            while (true)
             {
-                while (true)
+                char key = Console.ReadKey().KeyChar;
+                if (key == '?')
                 {
-                    printer.Value("Press c to get categories").ToString();
-                    printer.Value("Press r to get random jokes").ToString();
-                    GetEnteredKey(Console.ReadKey());
-                    if (key == 'c')
+                    Console.WriteLine();
+                    Console.WriteLine("Press c to get categories");
+                    Console.WriteLine("Press r to get random jokes");
+
+                }   
+                if (key == 'c')
+                {
+                    PrintResults(getCategories());
+                }
+                if (key == 'r')
+                {
+                    Tuple<string, string> name;
+                    Console.WriteLine();
+                    Console.WriteLine("Want to use a random name? y/n");
+                    key = Console.ReadKey().KeyChar;
+                    if (key == 'y')
                     {
-                        getCategories();
-                        PrintResults();
+                        name = GetRandomName();
                     }
-                    if (key == 'r')
+                    else
                     {
-                        printer.Value("Want to use a random name? y/n").ToString();
-                        GetEnteredKey(Console.ReadKey());
-                        if (key == 'y')
-                            GetNames();
-                        printer.Value("Want to specify a category? y/n").ToString();
-                        if (key == 'y')
-                        {
-                            printer.Value("How many jokes do you want? (1-9)").ToString();
-                            int n = Int32.Parse(Console.ReadLine());
-                            printer.Value("Enter a category;").ToString();
-                            GetRandomJokes(Console.ReadLine(), n);
-                            PrintResults();
-                        }
-                        else
-                        {
-                            printer.Value("How many jokes do you want? (1-9)").ToString();
-                            int n = Int32.Parse(Console.ReadLine());
-                            GetRandomJokes(null, n);
-                            PrintResults();
-                        }
+                        Console.WriteLine();
+                        Console.WriteLine("Enter a first name;");
+                        String firstName = Console.ReadLine();
+                        Console.WriteLine();
+                        Console.WriteLine("Enter a surname;");
+                        String lastName = Console.ReadLine();
+                        name = Tuple.Create(firstName, lastName);
                     }
-                    names = null;
+                    String category = null;
+                    Console.WriteLine();
+                    Console.WriteLine("Want to specify a category? y/n");
+                    key = Console.ReadKey().KeyChar;
+                    if (key == 'y')
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("Enter a category;");
+                        category = Console.ReadLine();
+                    }
+                    int numJokes = 0;
+                    while (true)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("How many jokes do you want? (1-9)");
+                        
+                        try
+                        {
+                            numJokes = Int32.Parse(Console.ReadLine());
+                        }
+                        catch (FormatException)
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("Please enter a number between 1-9");
+                            continue;
+                        }
+
+                        if (numJokes > MaxJokes)
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("Please enter a number between 1-9");
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    PrintResults(GetRandomJokes(category, name, numJokes));
                 }
             }
 
         }
 
-        private static void PrintResults()
+        private static void PrintResults(String[] results)
         {
-            printer.Value("[" + string.Join(",", results) + "]").ToString();
+            Console.WriteLine();
+            Console.WriteLine("[" + string.Join(",", results) + "]");
         }
 
-        private static void GetEnteredKey(ConsoleKeyInfo consoleKeyInfo)
+        /// <summary>
+        /// Retrieves random chuck norris jokes
+        /// </summary>
+        /// <returns>a string array of jokes</returns>
+        private static String[] GetRandomJokes(string category, Tuple<string, string> name, int number)
         {
-            switch (consoleKeyInfo.Key)
-            {
-                case ConsoleKey.C:
-                    key = 'c';
-                    break;
-                case ConsoleKey.D0:
-                    key = '0';
-                    break;
-                case ConsoleKey.D1:
-                    key = '1';
-                    break;
-                case ConsoleKey.D3:
-                    key = '3';
-                    break;
-                case ConsoleKey.D4:
-                    key = '4';
-                    break;
-                case ConsoleKey.D5:
-                    key = '5';
-                    break;
-                case ConsoleKey.D6:
-                    key = '6';
-                    break;
-                case ConsoleKey.D7:
-                    key = '7';
-                    break;
-                case ConsoleKey.D8:
-                    key = '8';
-                    break;
-                case ConsoleKey.D9:
-                    key = '9';
-                    break;
-                case ConsoleKey.R:
-                    key = 'r';
-                    break;
-                case ConsoleKey.Y:
-                    key = 'y';
-                    break;
-            }
+            return new JsonFeed("https://api.chucknorris.io").GetRandomJokes(name?.Item1, name?.Item2, category, number);
         }
 
-        private static void GetRandomJokes(string category, int number)
+        /// <summary>
+        /// Retrieves available joke categories
+        /// </summary>
+        /// <returns>a string array of categories</returns>
+        private static String[] getCategories()
         {
-            new JsonFeed("https://api.chucknorris.io", number);
-            results = JsonFeed.GetRandomJokes(names?.Item1, names?.Item2, category);
+            return new JsonFeed("https://api.chucknorris.io").GetCategories();
         }
 
-        private static void getCategories()
+        /// <summary>
+        /// Retrieves random name
+        /// </summary>
+        /// <returns>a tuple of the random name</returns>
+        private static Tuple<string, string> GetRandomName()
         {
-            new JsonFeed("https://api.chucknorris.io", 0);
-            results = JsonFeed.GetCategories();
-        }
-
-        private static void GetNames()
-        {
-            new JsonFeed("http://uinames.com/api/", 0);
-            dynamic result = JsonFeed.Getnames();
-            names = Tuple.Create(result.name.ToString(), result.surname.ToString());
+            dynamic result = new JsonFeed("http://uinames.com/api/").Getname();
+            return Tuple.Create(result.name.ToString(), result.surname.ToString());
         }
     }
 }
