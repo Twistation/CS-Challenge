@@ -27,7 +27,7 @@ namespace ConsoleApp1
                 }   
                 if (key == 'c')
                 {
-                    PrintResults(getCategories());
+                    PrintResults(GetCategories());
                 }
                 if (key == 'r')
                 {
@@ -111,7 +111,7 @@ namespace ConsoleApp1
         /// Retrieves available joke categories
         /// </summary>
         /// <returns>a string array of categories</returns>
-        private static String[] getCategories()
+        private static String[] GetCategories()
         {
             return new JsonFeed("https://api.chucknorris.io").GetCategories();
         }

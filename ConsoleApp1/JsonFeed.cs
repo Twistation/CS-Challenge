@@ -8,13 +8,13 @@ namespace ConsoleApp1
 {
     class JsonFeed
     {
-        private readonly string endpointUrl = "";
+        private readonly HttpClient client = new HttpClient();
 
         public JsonFeed() { }
 
         public JsonFeed(string endpoint)
         {
-            endpointUrl = endpoint;
+            client.BaseAddress = new Uri(endpoint);
         }
 
         /// <summary>
@@ -22,9 +22,7 @@ namespace ConsoleApp1
         /// </summary>
         /// <returns>a string array of random chuck norris jokes</returns>
         public string[] GetRandomJokes(string firstname, string lastname, string category, int numberOfJokes)
-		{
-			HttpClient client = new HttpClient();
-			client.BaseAddress = new Uri(endpointUrl);
+		{			
 			string requestUrl = "jokes/random";
             if (category != null)
             {
@@ -62,8 +60,6 @@ namespace ConsoleApp1
         /// <returns>an object that contains name and surname</returns>
 		public dynamic Getname()
 		{
-			HttpClient client = new HttpClient();
-			client.BaseAddress = new Uri(endpointUrl);
             var result = client.GetStringAsync("").Result;
             return JsonConvert.DeserializeObject<dynamic>(result);
         }
@@ -74,9 +70,6 @@ namespace ConsoleApp1
         /// <returns>a string array of categories</returns>
 		public string[] GetCategories()
 		{
-			HttpClient client = new HttpClient();
-			client.BaseAddress = new Uri(endpointUrl);
-
 			return new string[] { Task.FromResult(client.GetStringAsync("jokes/categories").Result).Result };
 		}
     }
