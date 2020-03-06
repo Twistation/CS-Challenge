@@ -1,0 +1,59 @@
+These should refer to all/most of the major changes. There may be some refactoring that I forgot to mention.
+Line numbers refer to original file (before my changes).
+
+ConsolePrinter.cs
+-----------------
+Remove this. It is not needed. Doing Console.WriteLine("String to print") will have the same effect.
+
+Program.cs
+----------
+Line 13: Remove static string[] results = new string[50]; No need to store the results of method calls. You can just have those methods return
+their results and print them from that.
+
+Line 14: Remove static char key; Don't need this to be global.	
+        
+Line 15: Remove static Tuple<string, string> names; Don't need this to be global.
+
+Line 16: Remove static ConsolePrinter printer = new ConsolePrinter(); We don't need this printer class to write output the the console.
+
+Line 21 - 23: Move check for question mark key inside the loop, so we can show help whenever we want, not just at the beginning. Also, we are not 
+required to push ? before doing other commands if we already know what the commands are.
+
+Line 40: Refactor category entry, and number of jokes entry. This doesn't work as intended. Category entry should be done before entering the number of jokes.
+In this same area: Input for number of jokes should be validated. It should be a numeric value between 1 - 9. Any other character(s) should not work, but also not
+crash the program.
+
+Line 62: PrintResults should take a parameter and print based on that, not based on a global variable.
+
+Line 67: Don't need GetEnteredKey method. char key = Console.ReadKey().KeyChar will do exactly the same thing without having to convert between ConsoleKeyInfo
+and char. It will also let you check for '?', which ConsoleKeyInfo does not.
+
+Lines 110, 116, 122: Refactor GetRandomJokes, GetCategories and GetNames (Rename to GetRandomName). They should all return their values rather
+than setting global variables.
+
+JsonFeed.cs
+-----------
+Line 13: Move HttpClient client and set it's baseUrl in constructor. Then you can just use the same client for all methods, rather than creating a new
+one and setting the url each time.
+
+Line 16: Remove parameter "int results" from constructor. It is never used.
+
+Line 21: Add parameter "int numberOfJokes" to GetRandomoJokes, otherwise we won't know how many jokes to generate.
+
+Line 25: Rename url to something more descriptive, like requestUrl.
+
+Line 30-32: These can be done in a single line.
+
+Line 35-42: This needs to be done multiple times, based on input of number of jokes to generate. 
+
+Line 39-42: All of this can be done with a call to string method Replace(string oldValue, string newValue). In fact, Replace will work better, because
+it will replace all instances of the name, not just the first.
+Also, should do the same for "Chuck" (Replace with firstName) and "Norris" (Replace with lastName) because some jokes use only those names, and not
+the full name.
+
+Line 53: GetNames() only returns a single name, so it should be called GetName()
+
+Line 66: The requestUri should be "jokes/categories", not "categories".
+
+Lines 21, 53, 61: Should not create a new HttpClient on each call. This can be created in the JsonFeed constructor and then just used 
+in these methods.
